@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>生日快乐</title>
+
+    <style>
+        body {
+            background: black;
+            color: white;
+            text-align: center;
+            font-family: Arial;
+            overflow: hidden;
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            height: 100vh;
+
+            flex-direction: column;
+        }
+
+        h1 {
+
+            font-size: 70px;
+            color: pink;
+
+            text-shadow:
+                0 0 10px pink,
+                0 0 20px pink,
+                0 0 40px pink;
+
+            animation: glow 2s infinite alternate;
+
+        }
+
+        @keyframes glow {
+
+            from {
+                text-shadow:
+                    0 0 10px pink,
+                    0 0 20px pink,
+                    0 0 40px pink;
+            }
+
+            to {
+                text-shadow:
+                    0 0 20px hotpink,
+                    0 0 50px hotpink,
+                    0 0 100px hotpink;
+            }
+
+        }
+
+        button {
+
+            background: pink;
+            margin-top: 140px;
+            color: white;
+
+            border: none;
+
+            padding: 20px 40px;
+
+            font-size: 30px;
+
+            border-radius: 20px;
+
+            cursor: pointer;
+            transition: all 0.5s;
+
+        }
+
+        button:hover {
+
+            transform: scale(1.1);
+
+            box-shadow:
+                0 0 20px pink;
+
+        }
+
+        #title {
+
+            opacity: 0;
+
+            transition: 2s;
+
+        }
+
+        #text {
+
+            opacity: 0;
+
+            transition: 2s;
+
+        }
+
+        .stars {
+            animation: moveStars 20s linear infinite;
+            position: fixed;
+
+            width: 100%;
+
+            height: 100%;
+
+            top: 0;
+
+            left: 0;
+
+            background:
+                radial-gradient(white 1px, transparent 1px);
+
+            background-size: 50px 50px;
+
+            opacity: 0.3;
+
+            z-index: -1;
+
+        }
+
+        @keyframes moveStars {
+
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-50px);
+            }
+
+        }
+
+        .card {
+            opacity: 0;
+
+            transition: 1s;
+            background: rgba(255, 255, 255, 0.08);
+
+            padding: 40px;
+
+            border-radius: 30px;
+
+            backdrop-filter: blur(10px);
+
+            display: inline-block;
+            opacity: 0;
+
+            transform: scale(0.85) translateY(30px);
+
+            transition: all 1s;
+
+        }
+
+        #cakeCanvas {
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            z-index: 0;
+
+            pointer-events: none;
+
+        }
+
+        @media (max-width: 600px) {
+
+            h1 {
+                font-size: 40px;
+            }
+
+            p {
+                font-size: 22px;
+            }
+
+            button {
+                font-size: 22px;
+                padding: 15px 25px;
+                margin-top: 160px;
+            }
+
+            .card {
+                padding: 25px;
+                border-radius: 20px;
+                width: 80%;
+            }
+
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <div class="stars"></div>
+    <canvas id="cakeCanvas"></canvas>
+    <audio id="bgMusic" src="Happy Birthday.mp3"></audio>
+    <button id="btn" onclick="showMessage()">
+        点击打开生日惊喜 🎁
+    </button>
+
+    <div class="card" id="card">
+        <h1 id="title"></h1>
+
+        <p id="text">
+            祝你天天开心！
+        </p>
+    </div>
+    <script>
+        const canvas = document.getElementById("cakeCanvas");
+
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+        let fireworks = [];
+        let startCake = false;
+        let gatherSpeed = 0;
+
+        let floatOffset = 0;
+        for (let i = 0; i < 130; i++) {
+
+            let angle = i * 0.1;
+
+            let targetX;
+            let targetY;
+            let cakeY = canvas.height / 2 - 180;
+            if (i < 40) {
+
+                targetX = canvas.width / 2 - 60 + (i % 10) * 12;
+
+                targetY = cakeY + floatOffset - 80 + Math.floor(i / 10) * 12;
+
+            } else if (i < 100) {
+
+                targetX = canvas.width / 2 - 100 + ((i - 40) % 20) * 10;
+
+                targetY = cakeY + floatOffset + Math.floor((i - 40) / 20) * 10;
+
+            } else {
+
+                targetX = canvas.width / 2 - 10 + ((i - 100) % 3) * 10;
+
+                targetY = cakeY + floatOffset - 140 + Math.floor((i - 100) / 3) * 8;
+
+            }
+            particles.push({
+
+                x: Math.random() * canvas.width,
+
+                y: Math.random() * canvas.height,
+
+                size: 3,
+
+                speedX: Math.random() * 2 - 1,
+
+                speedY: Math.random() * 2 - 1,
+
+                targetX: targetX,
+
+                targetY: targetY,
+
+            });
+
+        }
+        function animate() {
+            floatOffset = Math.sin(Date.now() * 0.003) * 30;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+
+                let p = particles[i];
+
+                if (startCake) {
+
+                    gatherSpeed = gatherSpeed + 0.0002;
+
+                    if (gatherSpeed > 0.025) {
+                        gatherSpeed = 0.025;
+                    }
+
+                    p.x = p.x + (p.targetX - p.x) * gatherSpeed;
+
+                    p.y = p.y + (p.targetY - p.y) * gatherSpeed;
+
+                } else {
+
+                    p.x += p.speedX;
+
+                    p.y += p.speedY;
+
+                }
+
+                ctx.fillStyle = "pink";
+
+                if (p.targetY < canvas.height / 2 - 310) {
+
+                    let glow = Math.random() * 80 + 175;
+
+                    p.size = 3 + Math.random() * 2;
+
+                    ctx.fillStyle = "rgb(255," + glow + ",0)";
+
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = "orange";
+
+                } else {
+
+                    p.size = 3;
+
+                    ctx.fillStyle = "pink";
+
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = "pink";
+
+                }
+
+                ctx.beginPath();
+
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+
+                ctx.fill();
+
+            }
+            for (let i = 0; i < fireworks.length; i++) {
+
+                let f = fireworks[i];
+
+                f.x += f.speedX;
+
+                f.y += f.speedY;
+
+                f.life--;
+
+                ctx.beginPath();
+
+                ctx.fillStyle = "pink";
+
+                ctx.shadowBlur = 20;
+
+                ctx.shadowColor = "pink";
+
+                ctx.arc(f.x, f.y, f.size, 0, Math.PI * 2);
+
+                ctx.fill();
+
+            }
+
+            fireworks = fireworks.filter(f => f.life > 0);
+            requestAnimationFrame(animate);
+
+        }
+        function createFirework(x, y) {
+
+            for (let i = 0; i < 40; i++) {
+
+                fireworks.push({
+                    x: x,
+                    y: y,
+                    speedX: Math.random() * 6 - 3,
+                    speedY: Math.random() * 6 - 3,
+                    size: 3,
+                    life: 100
+                });
+
+            }
+
+        }
+        animate();
+        document.addEventListener("mousemove", function (e) {
+
+            let card = document.getElementById("card");
+
+            let x = (window.innerWidth / 2 - e.clientX) / 25;
+
+            let y = (window.innerHeight / 2 - e.clientY) / 25;
+
+            card.style.transform =
+                "scale(1) rotateY(" + x + "deg) rotateX(" + (-y) + "deg)";
+
+        });
+
+
+        function showMessage() {
+            document.getElementById("bgMusic").play();
+            startCake = true;
+            document.getElementById("title").innerHTML = "";
+            let message = "Happy Birthday 🎂";
+
+            let index = 0;
+
+            let typing = setInterval(function () {
+
+                document.getElementById("title").innerHTML += message[index];
+
+                index++;
+
+                if (index >= message.length) {
+                    clearInterval(typing);
+                }
+
+            }, 200);
+
+            setTimeout(() => {
+                createFirework(canvas.width / 2, canvas.height / 3);
+            }, 200);
+
+            setTimeout(() => {
+                createFirework(canvas.width / 4, canvas.height / 3.5);
+            }, 600);
+
+            setTimeout(() => {
+                createFirework(canvas.width * 3 / 4, canvas.height / 3.5);
+            }, 1000);
+
+            setTimeout(() => {
+                createFirework(canvas.width / 3, canvas.height * 2 / 3);
+            }, 1400);
+
+            setTimeout(() => {
+                createFirework(canvas.width * 2 / 3, canvas.height * 2 / 3);
+            }, 1800);
+
+            gatherSpeed = 0;
+            document.getElementById("title").style.opacity = "1";
+
+            document.getElementById("text").style.opacity = "1";
+
+            document.getElementById("btn").style.opacity = "0";
+            document.getElementById("btn").style.transform = "scale(0.6)";
+            setTimeout(function () {
+
+                document.getElementById("btn").style.display = "none";
+                document.querySelector(".card").style.opacity = "1";
+
+                document.querySelector(".card").style.transform = "scale(1) translateY(0)";
+
+            }, 500);
+
+
+        }
+
+    </script>
+</body>
+
+</html>
